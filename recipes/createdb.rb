@@ -17,6 +17,8 @@
 ## Create Oracle databases.
 #
 
+timeout_val = 18000
+
 directory node[:oracle][:rdbms][:dbs_root] do
   owner 'oracle'
   group 'oinstall'
@@ -68,7 +70,7 @@ node[:oracle][:rdbms][:dbs].each_key do |db|
       user "oracle"
       group "oinstall"
       environment (node[:oracle][:rdbms][:env])
-      timeout 18000
+      timeout timeout_val
       code "dbca -silent -createDatabase -emConfiguration DBEXPRESS -templateName #{node[:oracle][:rdbms][:db_create_template]} -gdbname #{db} -sid #{db} -sysPassword #{node[:oracle][:rdbms][:sys_pw]} -systemPassword #{node[:oracle][:rdbms][:system_pw]}"
     end
 
@@ -78,6 +80,7 @@ node[:oracle][:rdbms][:dbs].each_key do |db|
       user "oracle"
       group "oinstall"
       environment (node[:oracle][:rdbms][:env])
+      timeout timeout_val
       code "dbca -silent -createDatabase -templateName #{node[:oracle][:rdbms][:db_create_template]} -gdbname #{db} -sid #{db} -sysPassword #{node[:oracle][:rdbms][:sys_pw]} -systemPassword #{node[:oracle][:rdbms][:system_pw]}"
     end
 
@@ -114,6 +117,7 @@ node[:oracle][:rdbms][:dbs].each_key do |db|
         user "oracle"
         group "oinstall"
         environment (node[:oracle][:rdbms][:env])
+        timeout timeout_val
         code <<-EOH2
         export ORACLE_SID=#{db}
           sqlplus / as sysdba <<-EOL1
@@ -126,6 +130,7 @@ node[:oracle][:rdbms][:dbs].each_key do |db|
       # Change sid on em.rsp.
       execute "set_sid_to_em-rsp_#{db}" do
         command "sed -i '2s/.*/SID=#{db}/' #{node[:oracle][:rdbms][:ora_home]}/em.rsp"
+        timeout timeout_val
         user 'oracle'
         group 'oinstall'
       end
@@ -135,6 +140,7 @@ node[:oracle][:rdbms][:dbs].each_key do |db|
         user 'oracle'
         group 'oinstall'
         environment (node[:oracle][:rdbms][:env])
+        timeout timeout_val
       end
       # Running emca.
       execute "conf_dbcontrol_#{db}" do
@@ -142,6 +148,7 @@ node[:oracle][:rdbms][:dbs].each_key do |db|
         user 'oracle'
         group 'oinstall'
         environment (node[:oracle][:rdbms][:env])
+        timeout timeout_val
       end
     end
 
@@ -154,6 +161,7 @@ node[:oracle][:rdbms][:dbs].each_key do |db|
     # Shreding the em.rsp to get rid of the passwords.
     execute "shred_em_rsp_#{db}" do
       command "/usr/bin/shred -zu #{node[:oracle][:rdbms][:ora_home]}/em.rsp"
+      timeout timeout_val
       user 'root'
       group 'root'
     end
@@ -186,6 +194,7 @@ node[:oracle][:rdbms][:dbs].each_key do |db|
     user 'oracle'
     group 'oinstall'
     environment (node[:oracle][:rdbms][:env])
+    timeout timeout_val
   end
 
   # Creating a directory for EXPORTS directory object.
@@ -203,6 +212,7 @@ node[:oracle][:rdbms][:dbs].each_key do |db|
     user "oracle"
     group "oinstall"
     environment (node[:oracle][:rdbms][:env])
+    timeout timeout_val
     code <<-EOH3
     export ORACLE_SID=#{db}
       sqlplus / as sysdba <<-EOL2
@@ -226,6 +236,7 @@ node[:oracle][:rdbms][:dbs].each_key do |db|
     user 'oracle'
     group 'oinstall'
     environment (node[:oracle][:rdbms][:env])
+    timeout timeout_val
   end
 
   # Set the ORACLE_UNQNAME correctly in oracle's .profile.
@@ -234,6 +245,7 @@ node[:oracle][:rdbms][:dbs].each_key do |db|
     user 'oracle'
     group 'oinstall'
     environment (node[:oracle][:rdbms][:env])
+    timeout timeout_val
   end
 
 end

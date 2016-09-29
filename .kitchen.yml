@@ -51,7 +51,6 @@ suites:
     run_list:
       - recipe[doi_ssl_filtering]
       - recipe[sysctl::apply]
-      - recipe[owi-oracle-servers]
       - recipe[oracle]
       - recipe[oracle::logrotate_alert_log]
       - recipe[oracle::logrotate_listener]
