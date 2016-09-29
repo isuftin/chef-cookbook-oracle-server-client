@@ -1,0 +1,100 @@
+---
+driver:
+  name: vagrant
+
+
+provisioner:
+  name: chef_zero
+
+platforms:
+  - name: centos-6.7-vbox
+    driver:
+      box: bento/centos-6.7
+      box_url: bento/centos-6.7
+      provider: virtualbox
+      customize:
+        memory: 6144
+  - name: centos-6.7-vmware
+    driver:
+      box: bento/centos-6.7
+      box_url: bento/centos-6.7
+      provider: vmware_fusion
+      customize:
+        memory: 6144
+  # Note: SFTP transport requires the installation of the kitchen-sync gem
+  # https://github.com/coderanger/kitchen-sync
+  # Run: chef gem install kitchen-sync
+  # This allows the very large installation zip to be transferred to the VM the 
+  # first time Test Kitchen is run, but not subsequent runs as long as the file
+  # has not changed. This speeds up testing dramatically.
+  - name: centos-6.7-vbox-sftp-transport
+    transport:
+      name: sftp
+    driver:
+      box: bento/centos-6.7
+      box_url: bento/centos-6.7
+      provider: virtualbox
+      customize:
+        memory: 6144
+  - name: centos-6.7-vmware-sftp-transport
+    transport:
+      name: sftp
+    driver:
+      box: bento/centos-6.7
+      box_url: bento/centos-6.7
+      provider: vmware_fusion
+      customize:
+        memory: 6144
+
+suites:
+  - name: default
+    run_list:
+      - recipe[doi_ssl_filtering]
+      - recipe[sysctl::apply]
+      - recipe[owi-oracle-servers]
+      - recipe[oracle]
+      - recipe[oracle::logrotate_alert_log]
+      - recipe[oracle::logrotate_listener]
+      - recipe[oracle-server-client::createdb]
+    data_path: './test/fixtures/files/'
+    data_bags_path: './test/integration/default/data_bags/'
+    encrypted_data_bag_secret_key_path: './test/integration/default/encrypted_data_bag_secret'
+    attributes: {
+      'oracle' : {
+        'user' : {
+          'edb' : 'oracle-server-client-_default',
+          'edb_item' : 'user-credentials'
+        },
+        'rdbms' : {
+          'dbbin_version' : '12c',
+          'install_files' : [
+            'file:///tmp/kitchen/data/linuxamd64_12102_database_1of2.zip',
+            'file:///tmp/kitchen/data/linuxamd64_12102_database_2of2.zip'            
+          ],
+          'latest_patch' : {
+            'is_installed' : true
+          },
+          'dbs' : {
+            'testdb' : false
+          }
+        }
+      },
+      'sysctl' : {
+        'params' : {
+          'net.core.wmem_max' : '1048576',
+          'net.core.wmem_default' : '262144',
+          'net.core.rmem_max' : '4194304',
+          'net.core.rmem_default' : '262144',
+          'net.ipv4.ip_local_port_range' : '9000 65535',
+          'fs.filemax' : '6815744',
+          'fs.aio-max-nr' : '1048576',
+          'kernel.semmsl' : '250',
+          'kernel.semmns' : '32000',
+          'kernel.semopm' : '100',
+          'kernel.semmni' : '128',
+          'kernel.shmmni' : '4096',
+          'kernel.panic_on_oops' : '1'
+        }
+      }
+    }
+    
