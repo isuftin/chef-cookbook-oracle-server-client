@@ -17,7 +17,7 @@
 ## Create Oracle databases.
 #
 
-timeout_val = 18000
+timeout_val = node['oracle-server-client']['execution-timeout']
 
 directory node[:oracle][:rdbms][:dbs_root] do
   owner 'oracle'
