@@ -47,7 +47,7 @@ platforms:
         memory: 6144
 
 suites:
-  - name: default
+  - name: database
     run_list:
       - recipe[doi_ssl_filtering]
       - recipe[sysctl::apply]
@@ -93,6 +93,32 @@ suites:
           'kernel.semmni' : '128',
           'kernel.shmmni' : '4096',
           'kernel.panic_on_oops' : '1'
+        }
+      }
+    }
+
+  - name: client
+    run_list:
+      - recipe[doi_ssl_filtering]
+      - recipe[sysctl::apply]
+      - recipe[oracle::oracli]
+    data_path: './test/fixtures/files/'
+    data_bags_path: './test/integration/default/data_bags/'
+    encrypted_data_bag_secret_key_path: './test/integration/default/encrypted_data_bag_secret'
+    attributes: {
+      'oracle' : {
+        'cliuser' : {
+          'edb' : 'oracle-server-client-_default',
+          'edb_item' : 'user-credentials'
+        },
+        'client' : {
+          'install_files' : [
+            'file:///tmp/kitchen/data/linuxamd64_12102_database_1of2.zip',
+            'file:///tmp/kitchen/data/linuxamd64_12102_database_2of2.zip'            
+          ],
+          'latest_patch' : {
+            'is_installed' : true
+          }
         }
       }
     }
